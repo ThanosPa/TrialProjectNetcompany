@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
-    private int accountId;
-    private int beneficiaryId;
+    private Long accountId;
+    private Long beneficiaryId;
 }

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Beneficiary {
-    private int beneficiaryId;
+    private Long beneficiaryId;
     private String firstName;
     private String lastName;
 }
