@@ -85,7 +85,6 @@ public class AccountManagementService {
         }
     }
 
-    // Use Optional to avoid returning null and better handle "not found" cases
     public Optional<Beneficiary> getBeneficiaryDetails(Long beneficiaryId) {
         return Optional.ofNullable(beneficiaries.get(beneficiaryId));
     }
@@ -132,7 +131,6 @@ public class AccountManagementService {
         return balance.setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 
-    // Fix date logic to reflect "last month" correctly (was set to 9 months in original code)
     public Optional<Transaction> getLargestWithdrawalLastMonth(Long beneficiaryId) {
         LocalDate oneMonthAgo = LocalDate.now().minusMonths(1);
         List<Transaction> beneficiaryTransactions = getTransactionsForBeneficiary(beneficiaryId);

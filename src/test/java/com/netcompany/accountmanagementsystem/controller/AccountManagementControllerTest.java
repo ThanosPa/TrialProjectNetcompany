@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -36,7 +35,7 @@ class AccountManagementControllerTest {
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);  // Replace deprecated initMocks
         mockMvc = MockMvcBuilders.standaloneSetup(accountController).build();
     }
 
@@ -58,8 +57,11 @@ class AccountManagementControllerTest {
     void testGetBeneficiaryNotFound() throws Exception {
         when(accountService.getBeneficiaryDetails(999L)).thenReturn(Optional.empty());
 
+        String expectedErrorMessage = "{\"error\":\"Beneficiary with ID 999 not found\"}";
+
         mockMvc.perform(get("/api/beneficiary/999"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(content().json(expectedErrorMessage));
 
         verify(accountService, times(1)).getBeneficiaryDetails(999L);
     }
@@ -85,8 +87,11 @@ class AccountManagementControllerTest {
     void testGetAccountsNotFound() throws Exception {
         when(accountService.getAccountsForBeneficiary(305L)).thenReturn(Collections.emptyList());
 
+        String expectedErrorMessage = "{\"error\":\"No accounts found for Beneficiary with ID 305\"}";
+
         mockMvc.perform(get("/api/beneficiary/305/accounts"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(content().json(expectedErrorMessage));
 
         verify(accountService, times(1)).getAccountsForBeneficiary(305L);
     }
@@ -108,15 +113,16 @@ class AccountManagementControllerTest {
         verify(accountService, times(1)).getTransactionsForBeneficiary(305L);
     }
 
-
-
     // Test for getTransactions - No Transactions Found
     @Test
     void testGetTransactionsNotFound() throws Exception {
         when(accountService.getTransactionsForBeneficiary(305L)).thenReturn(Collections.emptyList());
 
+        String expectedErrorMessage = "{\"error\":\"No transactions found for Beneficiary with ID 305\"}";
+
         mockMvc.perform(get("/api/beneficiary/305/transactions"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(content().json(expectedErrorMessage));
 
         verify(accountService, times(1)).getTransactionsForBeneficiary(305L);
     }
@@ -126,9 +132,15 @@ class AccountManagementControllerTest {
     void testGetAccountBalance() throws Exception {
         when(accountService.getAccountBalance(1L)).thenReturn(150.75);
 
+        String expectedResponse = """
+                {
+                    "accountId": "1",
+                    "balance": "150.75"
+                }""";
+
         mockMvc.perform(get("/api/account/1/balance"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("150.75"));
+                .andExpect(content().json(expectedResponse));
 
         verify(accountService, times(1)).getAccountBalance(1L);
     }
@@ -151,8 +163,11 @@ class AccountManagementControllerTest {
     void testGetLargestWithdrawalNotFound() throws Exception {
         when(accountService.getLargestWithdrawalLastMonth(305L)).thenReturn(Optional.empty());
 
+        String expectedErrorMessage = "{\"error\":\"No withdrawals found for Beneficiary with ID 305\"}";
+
         mockMvc.perform(get("/api/beneficiary/305/largest-withdrawal"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(content().json(expectedErrorMessage));
 
         verify(accountService, times(1)).getLargestWithdrawalLastMonth(305L);
     }
