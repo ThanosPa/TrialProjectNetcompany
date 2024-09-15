@@ -127,22 +127,42 @@ class AccountManagementControllerTest {
         verify(accountService, times(1)).getTransactionsForBeneficiary(305L);
     }
 
-    // Test for getAccountBalance
+    // Test for total balance across all accounts for a beneficiary
     @Test
-    void testGetAccountBalance() throws Exception {
-        when(accountService.getAccountBalance(1L)).thenReturn(150.75);
+    void testGetTotalBalanceForBeneficiary() throws Exception {
+        // Mock the accounts for the beneficiary, ensuring there's at least one account to avoid the 404
+        List<Account> mockAccounts = Arrays.asList(new Account(1L, 305L), new Account(2L, 305L));
+        when(accountService.getAccountsForBeneficiary(305L)).thenReturn(mockAccounts);  // Ensure non-empty list
+
+        // Mock the total balance calculation
+        when(accountService.getTotalBalanceForBeneficiary(305L)).thenReturn(300.50);
 
         String expectedResponse = """
-                {
-                    "accountId": "1",
-                    "balance": "150.75"
-                }""";
+            {
+                "beneficiaryId": "305",
+                "totalBalance": 300.50
+            }""";
 
-        mockMvc.perform(get("/api/account/1/balance"))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/beneficiary/305/total-balance"))
+                .andExpect(status().isOk())  // Expecting 200 OK status
                 .andExpect(content().json(expectedResponse));
 
-        verify(accountService, times(1)).getAccountBalance(1L);
+        verify(accountService, times(1)).getTotalBalanceForBeneficiary(305L);
+    }
+
+
+    // Test for total balance - No accounts found for beneficiary
+    @Test
+    void testGetTotalBalanceForBeneficiaryNoAccounts() throws Exception {
+        when(accountService.getAccountsForBeneficiary(305L)).thenReturn(Collections.emptyList());
+
+        String expectedErrorMessage = "{\"error\":\"No accounts found for Beneficiary with ID 305\"}";
+
+        mockMvc.perform(get("/api/beneficiary/305/total-balance"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().json(expectedErrorMessage));
+
+        verify(accountService, times(1)).getAccountsForBeneficiary(305L);
     }
 
     // Test for getLargestWithdrawal

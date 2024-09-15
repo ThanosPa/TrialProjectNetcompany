@@ -65,13 +65,25 @@ public class AccountManagementController {
         return ResponseEntity.ok(transactions);
     }
 
-    @GetMapping("/account/{accountId}/balance")
-    public ResponseEntity<?> getAccountBalance(@PathVariable Long accountId) {
-        double balance = accountService.getAccountBalance(accountId);
+    @GetMapping("/beneficiary/{beneficiaryId}/total-balance")
+    public ResponseEntity<?> getTotalBalanceForBeneficiary(@PathVariable Long beneficiaryId) {
+        List<Account> accounts = accountService.getAccountsForBeneficiary(beneficiaryId);
 
-        // Return 200 OK with balance, even if it's 0
-        return ResponseEntity.ok(Map.of("accountId", String.valueOf(accountId), "balance", String.valueOf(balance)));
+        // If no accounts found, return 404
+        if (accounts.isEmpty()) {
+            logger.warn("No accounts found for Beneficiary with ID {}", beneficiaryId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("error", "No accounts found for Beneficiary with ID " + beneficiaryId)
+            );
+        }
+
+        // Proceed to calculate the total balance
+        double totalBalance = accountService.getTotalBalanceForBeneficiary(beneficiaryId);
+
+        return ResponseEntity.ok(Map.of("beneficiaryId", String.valueOf(beneficiaryId), "totalBalance", totalBalance));
     }
+
+
 
     @GetMapping("/beneficiary/{beneficiaryId}/largest-withdrawal")
     public ResponseEntity<?> getLargestWithdrawal(@PathVariable Long beneficiaryId) {

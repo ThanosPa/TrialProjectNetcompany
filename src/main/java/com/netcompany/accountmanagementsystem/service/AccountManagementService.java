@@ -114,7 +114,22 @@ public class AccountManagementService {
         return beneficiaryTransactions;
     }
 
-    public double getAccountBalance(Long accountId) {
+    public double getTotalBalanceForBeneficiary(Long beneficiaryId) {
+        List<Account> accounts = getAccountsForBeneficiary(beneficiaryId);
+
+        BigDecimal totalBalance = BigDecimal.ZERO;
+
+        // Calculate balance for each account using BigDecimal
+        for (Account account : accounts) {
+            BigDecimal accountBalance = getAccountBalanceAsBigDecimal(account.getAccountId());
+            totalBalance = totalBalance.add(accountBalance);
+        }
+
+        // Return as double after rounding to 2 decimal places
+        return totalBalance.setScale(2, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    public BigDecimal getAccountBalanceAsBigDecimal(Long accountId) {
         BigDecimal balance = BigDecimal.ZERO;
 
         for (Transaction transaction : transactions) {
@@ -128,7 +143,7 @@ public class AccountManagementService {
             }
         }
 
-        return balance.setScale(2, RoundingMode.HALF_UP).doubleValue();
+        return balance.setScale(2, RoundingMode.HALF_UP);
     }
 
     public Optional<Transaction> getLargestWithdrawalLastMonth(Long beneficiaryId) {
